@@ -56,10 +56,15 @@ const linksList = [
     link: '/'
   },
   {
-    title: 'Employees',
+    title: 'Users',
     icon: 'people',
+    link: '/users'
+  },
+  {
+    title: 'Employees',
+    icon: 'badge',
     link: '/employees'
-  }
+  },
 ]
 
 const leftDrawerOpen = ref(false)

@@ -2,21 +2,11 @@
   <q-page>
     <q-card>
       <q-card-section>
-        <div class="text-h6">User Management</div>
+        <div class="text-h6">Employee Management</div>
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit.prevent="createEmployee">
-          <q-input v-model="newEmployee.name" label="Name" dense />
-          <q-input v-model="newEmployee.lastname" label="Lastname" dense />
-          <q-input v-model="newEmployee.username" label="Username" dense />
-          <q-input v-model="newEmployee.email" label="Email" dense />
-          <q-input v-model="newEmployee.position" label="Position" dense />
-          <q-input v-model="newEmployee.address" label="Address" dense />
-          <q-input v-model="newEmployee.date_of_birth" label="Date of Birth" dense />
-          <q-input v-model="newEmployee.place_of_birth" label="Place of Birth" dense />
-          <q-btn type="submit" label="Add User" color="primary" class="q-mt-sm" />
-        </q-form>
+        <q-btn label="Add Employee" color="primary" @click="addDialog = true" />
       </q-card-section>
 
       <q-separator />
@@ -34,25 +24,42 @@
         >
           <template v-slot:body-cell-actions="props">
             <q-td :props="props">
-              <q-btn
-                flat
-                dense
-                icon="edit"
-                @click="openEditDialog(props.row)"
-              />
-              <q-btn
-                flat
-                dense
-                icon="delete"
-                color="negative"
-                @click="deleteEmployee(props.row.id)"
-              />
+              <q-btn flat dense icon="edit" @click="openEditDialog(props.row)" />
+              <q-btn flat dense icon="delete" color="negative" @click="deleteEmployee(props.row.id)" />
             </q-td>
           </template>
         </q-table>
       </q-card-section>
     </q-card>
 
+    <!-- Add Employee Dialog -->
+    <q-dialog v-model="addDialog">
+      <q-card style="width: 500px;">
+        <q-card-section>
+          <div class="text-h6">Add New Employee</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit.prevent="createEmployee">
+            <q-input v-model="newEmployee.name" label="Name" dense />
+            <q-input v-model="newEmployee.lastname" label="Lastname" dense />
+            <q-input v-model="newEmployee.username" label="Username" dense />
+            <q-input v-model="newEmployee.email" label="Email" dense />
+            <q-input v-model="newEmployee.position" label="Position" dense />
+            <q-input v-model="newEmployee.address" label="Address" dense />
+            <q-input v-model="newEmployee.date_of_birth" label="Date of Birth (yyyy-mm-dd)" dense />
+            <q-input v-model="newEmployee.place_of_birth" label="Place of Birth" dense />
+
+            <q-card-actions align="right">
+              <q-btn flat label="Cancel" color="negative" @click="addDialog = false" />
+              <q-btn type="submit" label="Save" color="primary" />
+            </q-card-actions>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Edit Employee Dialog -->
     <q-dialog v-model="editDialog">
       <q-card>
         <q-card-section>
@@ -67,9 +74,13 @@
             <q-input v-model="editEmployee.email" label="Email" dense />
             <q-input v-model="editEmployee.position" label="Position" dense />
             <q-input v-model="editEmployee.address" label="Address" dense />
-            <q-input v-model="editEmployee.date_of_birth" label="Date of birth (yyyy/mm/dd)" dense />
-            <q-input v-model="editEmployee.place_of_birth" label="Place of birth" dense />
-            <q-btn type="submit" label="Update" color="primary" class="q-mt-sm" />
+            <q-input v-model="editEmployee.date_of_birth" label="Date of Birth (yyyy/mm/dd)" dense />
+            <q-input v-model="editEmployee.place_of_birth" label="Place of Birth" dense />
+
+            <q-card-actions align="right">
+              <q-btn flat label="Cancel" color="negative" @click="editDialog = false" />
+              <q-btn type="submit" label="Update" color="primary" />
+            </q-card-actions>
           </q-form>
         </q-card-section>
       </q-card>
@@ -77,111 +88,82 @@
   </q-page>
 </template>
 
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 const employees = ref([])
+const addDialog = ref(false) // Controls Add Employee Dialog
+const editDialog = ref(false) // Controls Edit Employee Dialog
+
 const newEmployee = ref({
   name: '',
   lastname: '',
   username: '',
   email: '',
   position: '',
+  address: '',
   date_of_birth: '',
   place_of_birth: ''
 })
+
 const editEmployee = ref({})
-const editDialog = ref(false)
 
 const columns = [
   {
     name: 'id',
-    required: true,
     label: 'ID',
-    align: 'left',
     field: row => row.id,
-    format: val => `${val}`,
-    sortable: true
-  },
+    sortable: true },
   {
     name: 'name',
-    required: true,
     label: 'Name',
-    align: 'left',
-    field: row => row.name, format: val => `${val}`,
-    sortable: true
-  },
+    field: row => row.name,
+    sortable: true },
   {
     name: 'lastname',
-    align: 'left',
     label: 'Lastname',
     field: row => row.lastname,
-    format: val => `${val}`,
-    sortable: true
-  },
+    sortable: true },
   {
     name: 'username',
-    align: 'left',
     label: 'Username',
     field: row => row.username,
-    format: val => `${val}`,
-    sortable: true
-  },
+    sortable: true },
   {
     name: 'email',
-    align: 'left',
     label: 'Email',
     field: row => row.email,
-    format: val => `${val}`,
-    sortable: true
-  },
+    sortable: true },
   {
     name: 'position',
-    align: 'left',
     label: 'Position',
     field: row => row.position,
-    format: val => `${val}`,
-    sortable: true
-  },
+    sortable: true },
   {
-    name:'address',
-    align: 'left',
+    name: 'address',
     label: 'Address',
-    field: row => row.address,
-    format: val => `${val}`
-  },
+    field: row => row.address },
   {
     name: 'dateofbirth',
-    align: 'left',
-    label: 'Date of Birth',
+    label: 'Date of Birth (yyyy-mm-dd)',
     field: row => row.date_of_birth,
-    format: val => {
-      const date = new Date(val)
-      return date.toLocaleDateString('en-GB')
-    },
-    sortable: true
-  },
+    sortable: true },
   {
     name: 'placeofbirth',
-    align: 'left',
     label: 'Place of Birth',
     field: row => row.place_of_birth,
-    format: val => `${val}`,
-    sortable: true
-  },
+    sortable: true },
   {
     name: 'actions',
-    align: 'center',
     label: 'Actions',
-    field: 'actions'
-  }
+    field: 'actions' }
 ]
 
 async function fetchEmployees() {
   try {
     const response = await axios.get('http://localhost:8080/api/employees')
-    console.log('Fetched employees:', response.data)
     employees.value = response.data
   } catch (error) {
     console.error('Error fetching employees:', error)
@@ -191,16 +173,8 @@ async function fetchEmployees() {
 async function createEmployee() {
   try {
     await axios.post('http://localhost:8080/api/employees/create', newEmployee.value)
-    newEmployee.value = {
-      name: '',
-      lastname: '',
-      username: '',
-      email: '',
-      position: '',
-      address: '',
-      date_of_birth: '',
-      place_of_birth: ''
-    }
+    newEmployee.value = { name: '', lastname: '', username: '', email: '', position: '', address: '', date_of_birth: '', place_of_birth: '' }
+    addDialog.value = false
     fetchEmployees()
   } catch (error) {
     console.error('Error creating employee:', error)
@@ -224,9 +198,7 @@ async function updateEmployee() {
 
 async function deleteEmployee(id) {
   try {
-    await axios.delete('http://localhost:8080/api/employees/delete', {
-      data: { id: id }
-    })
+    await axios.delete('http://localhost:8080/api/employees/delete', { data: { id: id } })
     fetchEmployees()
   } catch (error) {
     console.error('Error deleting employee:', error)
@@ -240,7 +212,7 @@ onMounted(() => {
 
 <style scoped>
 .scrollable-table {
-  max-height: 400px;  /* Set height for scrollable container */
+  max-height: 600px;  /* Set height for scrollable container */
   overflow-y: auto;   /* Allow vertical scrolling */
 }
 

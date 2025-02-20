@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MainLayout from '../layouts/MainLayout.vue';
+import IndexPage from '../pages/IndexPage.vue';
 import EmployeesPage from '../pages/EmployeesPage.vue';
+import UsersPage from '../pages/UsersPage.vue';
 
 const routes = [
   {
@@ -8,12 +10,16 @@ const routes = [
     component: MainLayout,
     children: [
       {
-        path: '',
-        redirect: '/employees'
+        path: '/',
+        component: IndexPage,
       },
       {
         path: 'employees',
         component: EmployeesPage,
+      },
+      {
+        path: 'users',
+        component: UsersPage,
       },
     ],
   },
