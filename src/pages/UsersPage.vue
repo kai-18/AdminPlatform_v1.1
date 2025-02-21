@@ -42,7 +42,7 @@
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <q-btn flat dense icon="edit" @click="openEditDialog(props.row)" />
-            <q-btn flat dense icon="delete" color="negative" @click="deleteUser(props.row.id)" />
+            <q-btn flat dense icon="delete" color="negative" @click="showDeleteDialog(props.row)" />
           </q-td>
         </template>
       </q-table>
@@ -75,7 +75,7 @@
           <div class="text-h6">Edit User</div>
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section class="editUser">
           <q-form @submit.prevent="updateUser">
             <q-input v-model="editUser.name" label="Name" dense />
             <q-input v-model="editUser.lastname" label="Lastname" dense />
@@ -89,6 +89,18 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="deleteDialog">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Are you sure you want to delete this user?</div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="negative" @click="deleteDialog = false" />
+          <q-btn label="Delete" color="primary" @click="confirmDelete" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -100,9 +112,21 @@ const users = ref([])
 const addDialog = ref(false)
 const editDialog = ref(false)
 const searchQuery = ref('')
+const deleteDialog = ref(false)
+const userToDelete = ref(null)
 function openEditDialog(user) {
   editUser.value = { ...user }
   editDialog.value = true
+}
+
+function showDeleteDialog(employee) {
+  userToDelete.value = employee
+  deleteDialog.value = true
+}
+
+function confirmDelete() {
+  deleteUser(userToDelete.value.id)
+  deleteDialog.value = false
 }
 
 const newUser = ref({
@@ -127,28 +151,28 @@ const columns = [
     label: 'Name',
     field: row => row.name,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'lastname',
     label: 'Lastname',
     field: row => row.lastname,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'username',
     label: 'Username',
     field: row => row.username,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'email',
     label: 'Email',
     field: row => row.email,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'actions',
@@ -232,5 +256,8 @@ onMounted(() => {
 
 .q-mt-sm {
   margin-top: 8px;
+}
+.editUser{
+  width: 400px;
 }
 </style>

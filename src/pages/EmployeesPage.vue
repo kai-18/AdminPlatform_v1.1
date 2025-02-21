@@ -40,17 +40,14 @@
         :filter="searchQuery"
       >
         <template v-slot:body-cell-actions="props">
-          <q-td :props="props">
-            <q-btn flat dense icon="edit" @click="openEditDialog(props.row)" />
-            <q-btn flat dense icon="delete" color="negative" @click="deleteEmployee(props.row.id)" />
-          </q-td>
+        <q-td :props="props">
+        <q-btn flat dense icon="edit" @click="openEditDialog(props.row)" />
+        <q-btn flat dense icon="delete" color="negative" @click="showDeleteDialog(props.row)" />
+        </q-td>
         </template>
       </q-table>
     </q-card-section>
-
     </q-card>
-
-    <!-- Add Employee Dialog -->
     <q-dialog v-model="addDialog">
       <q-card style="width: 500px;">
         <q-card-section>
@@ -90,15 +87,13 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-
-    <!-- Edit Employee Dialog -->
     <q-dialog v-model="editDialog">
       <q-card>
         <q-card-section>
           <div class="text-h6">Edit Employee</div>
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section class="editEmployee">
           <q-form @submit.prevent="updateEmployee">
             <q-input v-model="editEmployee.name" label="Name" dense />
             <q-input v-model="editEmployee.lastname" label="Lastname" dense />
@@ -131,6 +126,18 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="deleteDialog">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Are you sure you want to delete this employee?</div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="negative" @click="deleteDialog = false" />
+          <q-btn label="Delete" color="primary" @click="confirmDelete" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -143,6 +150,8 @@ const employees = ref([])
 const addDialog = ref(false)
 const editDialog = ref(false)
 const searchQuery = ref('')
+const deleteDialog = ref(false)
+const employeeToDelete = ref(null)
 const positionOptions = [
   { label: 'Manager', value: 'Manager' },
   { label: 'Developer', value: 'Developer' },
@@ -162,6 +171,15 @@ function openEditDialog(employee) {
   editDialog.value = true
 }
 
+function showDeleteDialog(employee) {
+  employeeToDelete.value = employee
+  deleteDialog.value = true
+}
+
+function confirmDelete() {
+  deleteEmployee(employeeToDelete.value.id)
+  deleteDialog.value = false
+}
 const newEmployee = ref({
   name: '',
   lastname: '',
@@ -188,48 +206,48 @@ const columns = [
     label: 'Name',
     field: row => row.name,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'lastname',
     label: 'Lastname',
     field: row => row.lastname,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'username',
     label: 'Username',
     field: row => row.username,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'email',
     label: 'Email',
     field: row => row.email,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'position',
     label: 'Position',
     field: row => row.position,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'address',
     label: 'Address',
     field: row => row.address,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'dateofbirth',
     label: 'Date of Birth (yyyy-mm-dd)',
     field: row => row.date_of_birth,
     sortable: true,
-    align: 'center'
+    align: 'left'
   },
   {
     name: 'placeofbirth',
@@ -295,6 +313,8 @@ async function deleteEmployee(id) {
   }
 }
 
+
+
 onMounted(() => {
   fetchEmployees()
 })
@@ -319,5 +339,8 @@ onMounted(() => {
 
 .q-mt-sm {
   margin-top: 8px;
+}
+.editEmployee{
+  width: 400px;
 }
 </style>
