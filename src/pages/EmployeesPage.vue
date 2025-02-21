@@ -2,34 +2,52 @@
   <q-page>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Employee Management</div>
-      </q-card-section>
-
-      <q-card-section>
-        <q-btn label="Add Employee" color="primary" @click="addDialog = true" />
-      </q-card-section>
-
-      <q-separator />
-
-      <q-card-section>
-        <q-table
-          :rows="employees"
-          :columns="columns"
-          row-key="id"
-          flat
+    <div class="row justify-between items-center">
+      <div class="text-h6">Employee Management</div>
+        <q-input
+          v-model="searchQuery"
+          label="Search employees..."
           dense
-          virtual-scroll
-          :rows-per-page-options="[30, 50, 100]"
-          class="scrollable-table"
-        >
-          <template v-slot:body-cell-actions="props">
-            <q-td :props="props">
-              <q-btn flat dense icon="edit" @click="openEditDialog(props.row)" />
-              <q-btn flat dense icon="delete" color="negative" @click="deleteEmployee(props.row.id)" />
-            </q-td>
-          </template>
-        </q-table>
-      </q-card-section>
+          outlined
+          clearable
+          debounce="300"
+          class="q-ml-md"
+          style="max-width: 300px;"
+          >
+        <template v-slot:prepend>
+        <q-icon name="search" />
+        </template>
+        </q-input>
+      </div>
+    </q-card-section>
+
+    <q-card-section>
+      <q-btn label="Add Employee" color="primary" @click="addDialog = true" />
+    </q-card-section>
+
+    <q-separator />
+
+    <q-card-section>
+      <q-table
+        :rows="employees"
+        :columns="columns"
+        row-key="id"
+        flat
+        dense
+        virtual-scroll
+        :rows-per-page-options="[30, 50, 100]"
+        class="scrollable-table"
+        :filter="searchQuery"
+      >
+        <template v-slot:body-cell-actions="props">
+          <q-td :props="props">
+            <q-btn flat dense icon="edit" @click="openEditDialog(props.row)" />
+            <q-btn flat dense icon="delete" color="negative" @click="deleteEmployee(props.row.id)" />
+          </q-td>
+        </template>
+      </q-table>
+    </q-card-section>
+
     </q-card>
 
     <!-- Add Employee Dialog -->
@@ -45,11 +63,25 @@
             <q-input v-model="newEmployee.lastname" label="Lastname" dense />
             <q-input v-model="newEmployee.username" label="Username" dense />
             <q-input v-model="newEmployee.email" label="Email" dense />
-            <q-input v-model="newEmployee.position" label="Position" dense />
+            <q-select
+              v-model="newEmployee.position"
+              label="Position"
+              dense
+              :options="positionOptions"
+              emit-value
+              map-options
+              @update:model-value="() => handlePositionChange(newEmployee)"
+            />
+
+            <q-input
+              v-if="newEmployee.position === 'Other'"
+              v-model="newEmployee.customPosition"
+              label="Enter Position"
+              dense
+            />
             <q-input v-model="newEmployee.address" label="Address" dense />
             <q-input v-model="newEmployee.date_of_birth" label="Date of Birth (yyyy-mm-dd)" dense />
             <q-input v-model="newEmployee.place_of_birth" label="Place of Birth" dense />
-
             <q-card-actions align="right">
               <q-btn flat label="Cancel" color="negative" @click="addDialog = false" />
               <q-btn type="submit" label="Save" color="primary" />
@@ -72,11 +104,25 @@
             <q-input v-model="editEmployee.lastname" label="Lastname" dense />
             <q-input v-model="editEmployee.username" label="Username" dense />
             <q-input v-model="editEmployee.email" label="Email" dense />
-            <q-input v-model="editEmployee.position" label="Position" dense />
+            <q-select
+              v-model="editEmployee.position"
+              label="Position"
+              dense
+              :options="positionOptions"
+              emit-value
+              map-options
+              @update:model-value="() => handlePositionChange(editEmployee)"
+            />
+
+            <q-input
+              v-if="editEmployee.position === 'Other'"
+              v-model="editEmployee.customPosition"
+              label="Enter Position"
+              dense
+            />
             <q-input v-model="editEmployee.address" label="Address" dense />
             <q-input v-model="editEmployee.date_of_birth" label="Date of Birth (yyyy/mm/dd)" dense />
             <q-input v-model="editEmployee.place_of_birth" label="Place of Birth" dense />
-
             <q-card-actions align="right">
               <q-btn flat label="Cancel" color="negative" @click="editDialog = false" />
               <q-btn type="submit" label="Update" color="primary" />
@@ -94,8 +140,27 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 const employees = ref([])
-const addDialog = ref(false) // Controls Add Employee Dialog
-const editDialog = ref(false) // Controls Edit Employee Dialog
+const addDialog = ref(false)
+const editDialog = ref(false)
+const searchQuery = ref('')
+const positionOptions = [
+  { label: 'Manager', value: 'Manager' },
+  { label: 'Developer', value: 'Developer' },
+  { label: 'Designer', value: 'Designer' },
+  { label: 'HR', value: 'HR' },
+  { label: 'Sales', value: 'Sales' },
+  { label: 'Other', value: 'Other' }
+]
+
+function handlePositionChange(employee) {
+  if (employee.position !== 'Other') {
+    employee.customPosition = ''
+  }
+}
+function openEditDialog(employee) {
+  editEmployee.value = { ...employee }
+  editDialog.value = true
+}
 
 const newEmployee = ref({
   name: '',
@@ -111,54 +176,72 @@ const newEmployee = ref({
 const editEmployee = ref({})
 
 const columns = [
-  {
-    name: 'id',
-    label: 'ID',
-    field: row => row.id,
-    sortable: true },
+  // {
+  //   name: 'id',
+  //   label: 'ID',
+  //   field: row => row.id,
+  //   sortable: true,
+  //   align: 'center'
+  // },
   {
     name: 'name',
     label: 'Name',
     field: row => row.name,
-    sortable: true },
+    sortable: true,
+    align: 'center'
+  },
   {
     name: 'lastname',
     label: 'Lastname',
     field: row => row.lastname,
-    sortable: true },
+    sortable: true,
+    align: 'center'
+  },
   {
     name: 'username',
     label: 'Username',
     field: row => row.username,
-    sortable: true },
+    sortable: true,
+    align: 'center'
+  },
   {
     name: 'email',
     label: 'Email',
     field: row => row.email,
-    sortable: true },
+    sortable: true,
+    align: 'center'
+  },
   {
     name: 'position',
     label: 'Position',
     field: row => row.position,
-    sortable: true },
+    sortable: true,
+    align: 'center'
+  },
   {
     name: 'address',
     label: 'Address',
-    field: row => row.address },
+    field: row => row.address,
+    align: 'center'
+  },
   {
     name: 'dateofbirth',
     label: 'Date of Birth (yyyy-mm-dd)',
     field: row => row.date_of_birth,
-    sortable: true },
+    sortable: true,
+    align: 'center'
+  },
   {
     name: 'placeofbirth',
     label: 'Place of Birth',
     field: row => row.place_of_birth,
-    sortable: true },
+    sortable: true
+  },
   {
     name: 'actions',
     label: 'Actions',
-    field: 'actions' }
+    field: 'actions'
+  }
 ]
 
 async function fetchEmployees() {
@@ -172,8 +255,14 @@ async function fetchEmployees() {
 
 async function createEmployee() {
   try {
-    await axios.post('http://localhost:8080/api/employees/create', newEmployee.value)
-    newEmployee.value = { name: '', lastname: '', username: '', email: '', position: '', address: '', date_of_birth: '', place_of_birth: '' }
+    const payload = {
+      ...newEmployee.value,
+      position: newEmployee.value.position === 'Other' ? newEmployee.value.customPosition : newEmployee.value.position
+    }
+
+    await axios.post('http://localhost:8080/api/employees/create', payload)
+
+    newEmployee.value = { name: '', lastname: '', username: '', email: '', position: '', customPosition: '', address: '', date_of_birth: '', place_of_birth: '' }
     addDialog.value = false
     fetchEmployees()
   } catch (error) {
@@ -181,14 +270,15 @@ async function createEmployee() {
   }
 }
 
-function openEditDialog(employee) {
-  editEmployee.value = { ...employee }
-  editDialog.value = true
-}
-
 async function updateEmployee() {
   try {
-    await axios.put('http://localhost:8080/api/employees/update', editEmployee.value)
+    const payload = {
+      ...editEmployee.value,
+      position: editEmployee.value.position === 'Other' ? editEmployee.value.customPosition : editEmployee.value.position
+    }
+
+    await axios.put('http://localhost:8080/api/employees/update', payload)
+
     editDialog.value = false
     fetchEmployees()
   } catch (error) {

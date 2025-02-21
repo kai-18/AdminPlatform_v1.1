@@ -4,29 +4,27 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/handlers"
 )
 
 type Employee struct {
-    ID       	 int    `json:"id"`
-    Name     	 string `json:"name"`
-    Lastname 	 string `json:"lastname"`
-    Username 	 string `json:"username"`
-    Email    	 string `json:"email"`
-    Position 	 string `json:"position"`
-	Address 	 string `json:"address"`
-    DateOfBirth  string `json:"date_of_birth"`
-    PlaceOfBirth string `json:"place_of_birth"`
+    ID       	   int    `json:"id"`
+    Name     	   string `json:"name"`
+    Lastname 	   string `json:"lastname"`
+    Username 	   string `json:"username"`
+    Email    	   string `json:"email"`
+    Position 	   string `json:"position"`
+	Address 	   string `json:"address"`
+    DateOfBirth    string `json:"date_of_birth"`
+    PlaceOfBirth   string `json:"place_of_birth"`
 }
 
 func dbConnect() (*sql.DB, error) {
-    dbUser := "srv_1"
-    dbPassword := "srv_1"
-    dbName := "admin_platform"
+    dbUser := "root"
+    dbPassword := "localhost"
+    dbName := "test"
     dbHost := "localhost"
     dbPort := "3306"
 
@@ -134,22 +132,4 @@ func deleteEmployee(w http.ResponseWriter, r *http.Request) {
     }
 
     w.WriteHeader(http.StatusOK)
-}
-
-func main() {
-    mux := http.NewServeMux()
-    mux.HandleFunc("/api/employees", getEmployees)
-    mux.HandleFunc("/api/employees/create", createEmployee)
-    mux.HandleFunc("/api/employees/update", updateEmployee)
-    mux.HandleFunc("/api/employees/delete", deleteEmployee)
-
-    // Enable CORS
-    corsOptions := handlers.CORS(
-        handlers.AllowedOrigins([]string{"*"}), // Vue dev server
-        handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
-        handlers.AllowedHeaders([]string{"Content-Type"}),
-    )
-
-    fmt.Println("Server started at http://localhost:8080")
-    log.Fatal(http.ListenAndServe(":8080", corsOptions(mux)))
 }
