@@ -1,12 +1,25 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/handlers"
 )
+
+func dbConnect() (*sql.DB, error) {
+    dbUser := "root"
+    dbPassword := "localhost"
+    dbName := "test"
+    dbHost := "localhost"
+    dbPort := "3306"
+
+    dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
+    return sql.Open("mysql", dsn)
+}
+
 func main() {
     mux := http.NewServeMux()
     mux.HandleFunc("/api/employees", getEmployees)

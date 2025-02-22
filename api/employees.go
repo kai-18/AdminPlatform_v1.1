@@ -1,9 +1,7 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -19,17 +17,6 @@ type Employee struct {
 	Address 	   string `json:"address"`
     DateOfBirth    string `json:"date_of_birth"`
     PlaceOfBirth   string `json:"place_of_birth"`
-}
-
-func dbConnect() (*sql.DB, error) {
-    dbUser := "root"
-    dbPassword := "localhost"
-    dbName := "test"
-    dbHost := "localhost"
-    dbPort := "3306"
-
-    dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
-    return sql.Open("mysql", dsn)
 }
 
 func getEmployees(w http.ResponseWriter, r *http.Request) {
